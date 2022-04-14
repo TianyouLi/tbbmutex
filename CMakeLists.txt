@@ -12,7 +12,7 @@ SET (TBB_SOURCE_DIR ${tbbmutex_SOURCE_DIR}/extern/tbb)
 SET (TBB_INSTALL_DIR ${tbbmutex_SOURCE_DIR}/install)
 INCLUDE (ExternalProject)
 ExternalProject_Add(tbb
-  GIT_REPOSITORY https://github.com/oneapi-src/oneTBB.git
+  GIT_REPOSITORY https://github.com/TianyouLi/oneTBB.git
   GIT_TAG master
   GIT_SHALLOW ON
   UPDATE_COMMAND ""
@@ -30,14 +30,31 @@ ExternalProject_Add(tbb
   -DBUILD_EXAMPLES=OFF
   BUILD_IN_SOURCE TRUE
   )
+
+SET (PICO_SOURCE_DIR ${tbbmutex_SOURCE_DIR}/extern/picobench)
+SET (PICO_INSTALL_DIR ${PICO_SOURCE_DIR})
+INCLUDE (ExternalProject)
+ExternalProject_Add(pico
+  GIT_REPOSITORY https://github.com/iboB/picobench.git
+  GIT_TAG master
+  GIT_SHALLOW ON
+  UPDATE_COMMAND ""
+  SOURCE_DIR ${PICO_SOURCE_DIR}
+  BUILD_IN_SOURCE FALSE
+  INSTALL_COMMAND ""
+  )
+
+
 add_dependencies (tbbmutex
-  tbb)
+  tbb
+  pico)
 
 # set the path for libraries
 
 INCLUDE_DIRECTORIES (
   ${tbbmutex_SOURCE_DIR}/include
   ${TBB_INSTALL_DIR}/include
+  ${PICO_INSTALL_DIR}/include
   )
 TARGET_LINK_LIBRARIES ( tbbmutex
   pthread
