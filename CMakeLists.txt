@@ -2,18 +2,42 @@ CMAKE_MINIMUM_REQUIRED ( VERSION 3.11)
 
 PROJECT( tbbmutex )
 
-## set output directory
-SET (tbbmutex_BINARY_DIR ${tbbmutex_SOURCE_DIR}/bin)
-FILE ( GLOB tbbmutex_SRC "${tbbmutex_SOURCE_DIR}/src/*.cpp" )
-
-ADD_EXECUTABLE ( tbbmutex  ${tbbmutex_SRC} )
-
 SET (TBB_SOURCE_DIR ${tbbmutex_SOURCE_DIR}/extern/tbb)
 SET (TBB_INSTALL_DIR ${tbbmutex_SOURCE_DIR}/install)
+
+SET (PICO_SOURCE_DIR ${tbbmutex_SOURCE_DIR}/extern/picobench)
+SET (PICO_INSTALL_DIR ${PICO_SOURCE_DIR})
+
+## set output directory
+FILE ( GLOB tbbmutex_SRC "${tbbmutex_SOURCE_DIR}/src/*.cpp" )
+
+INCLUDE_DIRECTORIES (
+  ${tbbmutex_SOURCE_DIR}/include
+  ${TBB_INSTALL_DIR}/include
+  ${PICO_INSTALL_DIR}/include
+  )
+
+SET ( GCC_COMPILE_FLAGS "-Wall -std=c++0x -O3")
+SET ( GCC_LINK_FLAGS    "-Wl,-rpath,$(ONETBB_LIB_PATH) -O3")
+
+SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${GCC_COMPILE_FLAGS}" )
+SET( CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${GCC_LINK_FLAGS}" )
+
+LINK_DIRECTORIES(${TBB_INSTALL_DIR}/lib64)
+
+ADD_EXECUTABLE ( tbbmutex  ${tbbmutex_SRC} )
+TARGET_LINK_LIBRARIES ( tbbmutex
+  tbb
+  pthread
+  )
+
+
+
 INCLUDE (ExternalProject)
+
 ExternalProject_Add(tbb
   GIT_REPOSITORY https://github.com/TianyouLi/oneTBB.git
-  GIT_TAG master
+  GIT_TAG spin-lock-enhance
   GIT_SHALLOW ON
   UPDATE_COMMAND ""
   SOURCE_DIR ${TBB_SOURCE_DIR}
@@ -29,11 +53,9 @@ ExternalProject_Add(tbb
   -DBUILD_PYTHON_MODULE=OFF
   -DBUILD_EXAMPLES=OFF
   BUILD_IN_SOURCE TRUE
+  BUILD_ALWAYS TRUE
   )
 
-SET (PICO_SOURCE_DIR ${tbbmutex_SOURCE_DIR}/extern/picobench)
-SET (PICO_INSTALL_DIR ${PICO_SOURCE_DIR})
-INCLUDE (ExternalProject)
 ExternalProject_Add(pico
   GIT_REPOSITORY https://github.com/iboB/picobench.git
   GIT_TAG master
@@ -49,21 +71,4 @@ add_dependencies (tbbmutex
   tbb
   pico)
 
-# set the path for libraries
 
-INCLUDE_DIRECTORIES (
-  ${tbbmutex_SOURCE_DIR}/include
-  ${TBB_INSTALL_DIR}/include
-  ${PICO_INSTALL_DIR}/include
-  )
-TARGET_LINK_LIBRARIES ( tbbmutex
-  pthread
-  rt
-  dl
-  )
-
-SET ( GCC_COMPILE_FLAGS "-Wall -std=c++0x -O3")
-SET ( GCC_LINK_FLAGS    "-Wl,-rpath,$(ONETBB_LIB_PATH) -O3")
-
-SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${GCC_COMPILE_FLAGS}" )
-SET( CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${GCC_LINK_FLAGS}" )
