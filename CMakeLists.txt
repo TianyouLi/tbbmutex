@@ -1,0 +1,52 @@
+CMAKE_MINIMUM_REQUIRED ( VERSION 3.11)
+
+PROJECT( tbbmutex )
+
+## set output directory
+SET (tbbmutex_BINARY_DIR ${tbbmutex_SOURCE_DIR}/bin)
+FILE ( GLOB tbbmutex_SRC "${tbbmutex_SOURCE_DIR}/src/*.cpp" )
+
+ADD_EXECUTABLE ( tbbmutex  ${tbbmutex_SRC} )
+
+SET (TBB_SOURCE_DIR ${tbbmutex_SOURCE_DIR}/extern/tbb)
+SET (TBB_INSTALL_DIR ${tbbmutex_SOURCE_DIR}/install)
+INCLUDE (ExternalProject)
+ExternalProject_Add(tbb
+  GIT_REPOSITORY https://github.com/oneapi-src/oneTBB.git
+  GIT_TAG master
+  GIT_SHALLOW ON
+  UPDATE_COMMAND ""
+  SOURCE_DIR ${TBB_SOURCE_DIR}
+  INSTALL_DIR ${TBB_INSTALL_DIR}
+  CMAKE_ARGS
+  -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
+  -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+  -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+  -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+  -DGLIBCXX_USE_CXX11_ABI=${GLIBCXX_USE_CXX11_ABI}
+  -DSTATIC_WINDOWS_RUNTIME=${STATIC_WINDOWS_RUNTIME}
+  -DBUILD_SHARED_LIBS=ON
+  -DBUILD_PYTHON_MODULE=OFF
+  -DBUILD_EXAMPLES=OFF
+  BUILD_IN_SOURCE TRUE
+  )
+add_dependencies (tbbmutex
+  tbb)
+
+# set the path for libraries
+
+INCLUDE_DIRECTORIES (
+  ${tbbmutex_SOURCE_DIR}/include
+  ${TBB_INSTALL_DIR}/include
+  )
+TARGET_LINK_LIBRARIES ( tbbmutex
+  pthread
+  rt
+  dl
+  )
+
+SET ( GCC_COMPILE_FLAGS "-Wall -std=c++0x -O3")
+SET ( GCC_LINK_FLAGS    "-Wl,-rpath,$(ONETBB_LIB_PATH) -O3")
+
+SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${GCC_COMPILE_FLAGS}" )
+SET( CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${GCC_LINK_FLAGS}" )
