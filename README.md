@@ -1,0 +1,5 @@
+# tbbmutex
+
+A test driver that intented to use for measure the performance of spin_mutex in oneTBB. The issue was in spin_mutex, there should have read-before-lock pattern to improve the performance once the contention are high, eg more than 64 threads highly contented. The legacy TBB(2019U9) has this issue but the latest oneTBB didn't: the latest oneTBB's mutex is a 'enchanced' version of spin_mutex use std::atomic to implement the lock semantic, and has already apply the 'read-before-lock' pattern. While the lagecy 2019U9 version's mutex are based on the OS mutex primitive which can not.
+
+Given the fact of above, the code of https://github.com/TianyouLi/oneTBB/blob/spin-lock-enhance/include/oneapi/tbb/spin_mutex.h seems no longer necessary. Developer should be encouraged to *use tbb::mutex instead of tbb::spin_mutex* in high contention cases with latest tbb release. Unlike the 2019U9 implementation, the latest tbb::mutex will not bring more OS kernel call and overhead of such delays.
