@@ -11,12 +11,6 @@ SET (PICO_INSTALL_DIR ${PICO_SOURCE_DIR})
 ## set output directory
 FILE ( GLOB tbbmutex_SRC "${tbbmutex_SOURCE_DIR}/src/*.cpp" )
 
-INCLUDE_DIRECTORIES (
-  ${tbbmutex_SOURCE_DIR}/include
-  ${TBB_INSTALL_DIR}/include
-  ${PICO_INSTALL_DIR}/include
-  )
-
 SET ( GCC_COMPILE_FLAGS "-Wall -std=c++0x -O3")
 SET ( GCC_LINK_FLAGS    "-Wl,-rpath,$(ONETBB_LIB_PATH) -O3")
 
@@ -28,6 +22,14 @@ LINK_DIRECTORIES (${TBB_INSTALL_DIR}/lib64)
 FIND_PACKAGE (Boost)
 
 ADD_EXECUTABLE ( tbbmutex  ${tbbmutex_SRC} )
+
+INCLUDE_DIRECTORIES (
+  ${tbbmutex_SOURCE_DIR}/include
+  ${TBB_INSTALL_DIR}/include
+  ${PICO_INSTALL_DIR}/include
+  ${Boost_INCLUDE_DIRS}
+  )
+
 TARGET_LINK_LIBRARIES ( tbbmutex
   tbb
   boost_thread
